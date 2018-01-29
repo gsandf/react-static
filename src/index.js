@@ -17,14 +17,7 @@ import { pathJoin, unwrapArray, isObject, createPool } from './shared'
 import ScrollTo from './utils/ScrollTo'
 
 // Proxy React Router
-export {
-  Prompt,
-  Redirect,
-  Route,
-  Switch,
-  matchPath,
-  withRouter
-} from 'react-router-dom'
+export { Prompt, Redirect, Route, Switch, matchPath, withRouter } from 'react-router-dom'
 
 // Proxy Helmet as Head
 export { Helmet as Head }
@@ -113,7 +106,7 @@ if (process.env.REACT_STATIC_ENV === 'development') {
   )
 }
 
-function cleanPath(path) {
+function cleanPath (path) {
   // Resolve the local path
   if (!path) {
     return
@@ -126,12 +119,10 @@ function cleanPath(path) {
   }
   let end = path.indexOf('#')
   end = end === -1 ? undefined : end
-  return pathJoin(
-    path.substring(hasOrigin ? window.location.origin.length : 0, end)
-  )
+  return pathJoin(path.substring(hasOrigin ? window.location.origin.length : 0, end))
 }
 
-async function prefetchData(path, { priority } = {}) {
+async function prefetchData (path, { priority } = {}) {
   // Get route info so we can check if path has any data
   const routes = await getRouteInfo()
 
@@ -166,10 +157,7 @@ async function prefetchData(path, { priority } = {}) {
         initialProps
       }
     } catch (err) {
-      console.error(
-        'Error: There was an error retrieving props for this route! path:',
-        path
-      )
+      console.error('Error: There was an error retrieving props for this route! path:', path)
       throw err
     }
     delete inflight[path]
@@ -200,9 +188,7 @@ async function prefetchData(path, { priority } = {}) {
             if (priority) {
               inflight[hash] = axios.get(`/staticData/${hash}.json`)
             } else {
-              inflight[hash] = prefetchPool.add(() =>
-                axios.get(`/staticData/${hash}.json`)
-              )
+              inflight[hash] = prefetchPool.add(() => axios.get(`/staticData/${hash}.json`))
             }
           }
           const { data: prop } = await inflight[hash]
@@ -210,10 +196,7 @@ async function prefetchData(path, { priority } = {}) {
           // Place it in the cache
           propsByHash[hash] = prop
         } catch (err) {
-          console.error(
-            'Error: There was an error retrieving a prop for this route! hashID:',
-            hash
-          )
+          console.error('Error: There was an error retrieving a prop for this route! hashID:', hash)
           console.error(err)
         }
         delete inflight[hash]
@@ -241,11 +224,10 @@ async function prefetchData(path, { priority } = {}) {
   return pathProps[path]
 }
 
-async function prefetchTemplate(path, { priority } = {}) {
+async function prefetchTemplate (path, { priority } = {}) {
   // Preload the template if available
   const pathTemplate =
-    window.reactStaticGetComponentForPath &&
-    window.reactStaticGetComponentForPath(path)
+    window.reactStaticGetComponentForPath && window.reactStaticGetComponentForPath(path)
   if (pathTemplate && pathTemplate.preload) {
     if (priority) {
       await pathTemplate.preload()
@@ -256,7 +238,7 @@ async function prefetchTemplate(path, { priority } = {}) {
   }
 }
 
-export async function prefetch(path, options = {}) {
+export async function prefetch (path, options = {}) {
   // Clean the path
   path = cleanPath(path)
 
@@ -277,9 +259,11 @@ export async function prefetch(path, options = {}) {
   return data
 }
 
-getPathFromLocation = ({ pathname, search }) => `${pathname}${search}`
+function getPathFromLocation ({ pathname, search }) {
+  return `${pathname}${search}`
+}
 
-export function getRouteProps(Comp, getPath = getPathFromLocation) {
+export function getRouteProps (Comp, getPath = getPathFromLocation) {
   return withRouter(
     class GetRouteProps extends Component {
       static contextTypes = {
@@ -288,12 +272,12 @@ export function getRouteProps(Comp, getPath = getPathFromLocation) {
       state = {
         loaded: false
       }
-      componentWillMount() {
+      componentWillMount () {
         if (process.env.REACT_STATIC_ENV === 'development') {
           this.loadRouteProps()
         }
       }
-      componentWillReceiveProps(nextProps) {
+      componentWillReceiveProps (nextProps) {
         if (process.env.REACT_STATIC_ENV === 'development') {
           if (
             this.props.location.pathname + this.props.location.search !==
@@ -303,12 +287,12 @@ export function getRouteProps(Comp, getPath = getPathFromLocation) {
           }
         }
       }
-      componentWillUnmount() {
+      componentWillUnmount () {
         this.unmounting = true
       }
       loadRouteProps = () =>
         (async () => {
-          const path = pathJoin(getPathFromLocation(this.props.location))
+          const path = pathJoin(getPath(this.props.location))
           await prefetch(path)
           if (this.unmounting) {
             return
@@ -317,8 +301,8 @@ export function getRouteProps(Comp, getPath = getPathFromLocation) {
             loaded: true
           })
         })()
-      render() {
-        const path = pathJoin(getPathFromLocation(this.props.location))
+      render () {
+        const path = pathJoin(getPath(this.props.location))
 
         let initialProps
 
@@ -331,9 +315,7 @@ export function getRouteProps(Comp, getPath = getPathFromLocation) {
         if (!initialProps && this.context.initialProps) {
           initialProps = this.context.initialProps
         } else {
-          initialProps = pathProps[path]
-            ? pathProps[path].initialProps
-            : initialProps
+          initialProps = pathProps[path] ? pathProps[path].initialProps : initialProps
         }
 
         if (!initialProps && this.state.loaded) {
@@ -355,7 +337,7 @@ export function getRouteProps(Comp, getPath = getPathFromLocation) {
   )
 }
 
-export function getSiteProps(Comp) {
+export function getSiteProps (Comp) {
   return class GetSiteProps extends Component {
     static contextTypes = {
       siteProps: PropTypes.object
@@ -363,7 +345,7 @@ export function getSiteProps(Comp) {
     state = {
       siteProps: false
     }
-    async componentWillMount() {
+    async componentWillMount () {
       if (process.env.REACT_STATIC_ENV === 'development') {
         const { data: siteProps } = await (() => {
           if (sitePropsPromise) {
@@ -380,10 +362,10 @@ export function getSiteProps(Comp) {
         })
       }
     }
-    componentWillUnmount() {
+    componentWillUnmount () {
       this.unmounting = true
     }
-    render() {
+    render () {
       let siteProps
       if (typeof window !== 'undefined') {
         if (window.__routeData) {
@@ -418,26 +400,22 @@ export class Prefetch extends Component {
     only: null,
     onLoad: () => {}
   }
-  async componentDidMount() {
+  async componentDidMount () {
     const { path, onLoad, only } = this.props
     const data = await prefetch(path, { only })
     onLoad(data, path)
   }
-  render() {
+  render () {
     return unwrapArray(this.props.children)
   }
 }
 
-const ioIsSupported =
-  typeof window !== 'undefined' && 'IntersectionObserver' in window
+const ioIsSupported = typeof window !== 'undefined' && 'IntersectionObserver' in window
 const handleIntersection = (element, callback) => {
   const io = new window.IntersectionObserver(entries => {
     entries.forEach(entry => {
       // Edge doesn't support isIntersecting. intersectionRatio > 0 works as a fallback
-      if (
-        element === entry.target &&
-        (entry.isIntersecting || entry.intersectionRatio > 0)
-      ) {
+      if (element === entry.target && (entry.isIntersecting || entry.intersectionRatio > 0)) {
         io.unobserve(element)
         io.disconnect()
         callback()
@@ -457,7 +435,7 @@ export class PrefetchWhenSeen extends Component {
     onLoad: () => {}
   }
 
-  componentDidMount() {
+  componentDidMount () {
     if (!ioIsSupported) {
       this.runPrefetch()
     }
@@ -476,7 +454,7 @@ export class PrefetchWhenSeen extends Component {
     }
   }
 
-  render() {
+  render () {
     const { component, render, children, ...rest } = this.props
     if (component) {
       return React.createElement(component, {
@@ -507,14 +485,11 @@ const RouterScroller = withRouter(
       scrollToTopDuration: 0,
       scrollToHashDuration: 800
     }
-    componentDidMount() {
+    componentDidMount () {
       this.scrollToHash()
     }
-    componentDidUpdate(prev) {
-      if (
-        prev.location.hash !== this.props.location.hash &&
-        this.props.location.hash
-      ) {
+    componentDidUpdate (prev) {
+      if (prev.location.hash !== this.props.location.hash && this.props.location.hash) {
         return this.scrollToHash()
       }
       if (prev.location.pathname !== this.props.location.pathname) {
@@ -538,7 +513,7 @@ const RouterScroller = withRouter(
         }
       }
     }
-    render() {
+    render () {
       return unwrapArray(this.props.children)
     }
   }
@@ -562,7 +537,7 @@ export class Router extends Component {
     error: null,
     errorInfo: null
   }
-  componentDidMount() {
+  componentDidMount () {
     getRouteInfo()
     if (typeof window !== 'undefined') {
       const { href, origin } = window.location
@@ -575,14 +550,14 @@ export class Router extends Component {
       }
     }
   }
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch (error, errorInfo) {
     // Catch errors in any child components and re-renders with an error message
     this.setState({
       error,
       errorInfo
     })
   }
-  render() {
+  render () {
     const {
       history,
       type,
@@ -640,10 +615,7 @@ export class Router extends Component {
       ;['push', 'replace'].forEach(method => {
         const originalMethod = resolvedHistory[method]
         resolvedHistory[method] = async (...args) => {
-          const path =
-            typeof args[0] === 'string'
-              ? args[0]
-              : args[0].path + args[0].search
+          const path = typeof args[0] === 'string' ? args[0] : args[0].path + args[0].search
           setLoading(true)
           await prefetch(path, {
             priority: true
@@ -655,12 +627,7 @@ export class Router extends Component {
     }
 
     return (
-      <ResolvedRouter
-        history={resolvedHistory}
-        location={staticURL}
-        context={context}
-        {...rest}
-      >
+      <ResolvedRouter history={resolvedHistory} location={staticURL} context={context} {...rest}>
         <RouterScroller {...{ scrollToTopDuration, scrollToHashDuration }}>
           {children}
         </RouterScroller>
@@ -669,7 +636,7 @@ export class Router extends Component {
   }
 }
 
-function isRoutingUrl(to) {
+function isRoutingUrl (to) {
   if (typeof to === 'undefined') return false
   return (
     !to.match(/^#/) &&
@@ -690,7 +657,7 @@ const reactRouterProps = [
   'replace'
 ]
 
-export function NavLink({ Comp, only, ...rest }) {
+export function NavLink ({ Comp, only, ...rest }) {
   const { to } = rest
   const resolvedTo = isObject(to) ? to.path : to
   // Router Link
@@ -699,9 +666,7 @@ export function NavLink({ Comp, only, ...rest }) {
       <PrefetchWhenSeen
         path={resolvedTo}
         only={only}
-        render={({ handleRef }) => (
-          <ReactRouterNavLink {...rest} innerRef={handleRef} />
-        )}
+        render={({ handleRef }) => <ReactRouterNavLink {...rest} innerRef={handleRef} />}
       />
     )
   }
@@ -712,9 +677,7 @@ export function NavLink({ Comp, only, ...rest }) {
   delete aRest.to
 
   reactRouterProps.filter(prop => aRest[prop]).forEach(prop => {
-    console.warn(
-      `Warning: ${prop} makes no sense on a <Link to="${aRest.href}">.`
-    )
+    console.warn(`Warning: ${prop} makes no sense on a <Link to="${aRest.href}">.`)
   })
   reactRouterProps.forEach(prop => delete aRest[prop])
 
