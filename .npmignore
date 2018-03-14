@@ -1,4 +1,7 @@
+node_modules
+
 # testing
+/test
 /coverage
 
 # production
@@ -6,6 +9,10 @@
 /examples/*/yarn.lock
 /src
 !/src/index.d.ts
+
+# Documentation
+docs/
+docs-dist/
 
 # misc
 .DS_Store
@@ -15,6 +22,9 @@
 .env.test.local
 .env.production.local
 .esm-cache
+
+# Media
+.sketch
 
 *.log
 npm-debug.log*

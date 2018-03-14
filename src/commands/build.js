@@ -2,55 +2,76 @@ import fs from 'fs-extra'
 import chalk from 'chalk'
 //
 import { exportRoutes, buildXMLandRSS, prepareRoutes } from '../static'
-import { buildProductionBundles } from '../webpack'
-import { getConfig, copyPublicFolder } from '../utils'
+import { buildProductionBundles } from '../static/webpack'
+import getConfig from '../static/getConfig'
+import { copyPublicFolder } from '../utils'
 
-export default async cliArguments => {
-  try {
-    const config = getConfig()
-    await fs.remove(config.paths.DIST)
+export default async function build ({ config, staging, debug, isCLI, silent = !isCLI } = {}) {
+  // ensure ENV variables are set
+  if (typeof process.env.NODE_ENV === 'undefined') {
+    process.env.NODE_ENV = 'production'
+  }
+  process.env.REACT_STATIC_ENV = 'production'
+  process.env.BABEL_ENV = 'production'
 
-    console.log('')
-    console.time('=> Site is ready for production!')
+  if (staging) {
+    process.env.REACT_STATIC_STAGING = true
+  }
+  if (debug) {
+    process.env.REACT_STATIC_DEBUG = true
+  }
 
-    console.log('=> Copying public directory...')
-    console.time(chalk.green('=> [\u2713] Public directory copied'))
-    copyPublicFolder(config)
-    console.timeEnd(chalk.green('=> [\u2713] Public directory copied'))
+  // Allow config location to be overriden
+  config = getConfig(config)
 
-    console.log('=> Building Routes...')
-    console.time(chalk.green('=> [\u2713] Routes Built'))
-    config.routes = await config.getRoutes({ dev: false })
-    await prepareRoutes(config)
-    console.timeEnd(chalk.green('=> [\u2713] Routes Built'))
+  if (debug) {
+    console.log('DEBUG - Resolved static.config.js:')
+    console.log(config)
+  }
 
-    // Build static pages and JSON
-    console.log('=> Bundling App...')
-    console.time(chalk.green('=> [\u2713] App Bundled'))
-    const clientStats = await buildProductionBundles({ config })
-    console.timeEnd(chalk.green('=> [\u2713] App Bundled'))
+  await fs.remove(config.paths.DIST)
 
-    if (config.bundleAnalyzer) {
-      await new Promise(() => {})
+  if (!silent) console.log('')
+
+  if (!config.siteRoot) {
+    if (!silent) {
+      console.log(
+        "=> Info: No 'siteRoot' is defined in 'static.config.js'. This is suggested for absolute url's and a sitemap.xml to be automatically generated."
+      )
     }
+    if (!silent) console.log('')
+  }
 
-    console.log('=> Exporting Routes...')
-    console.time(chalk.green('=> [\u2713] Routes Exported'))
-    await exportRoutes({
-      config,
-      clientStats,
-      cliArguments,
-    })
-    await buildXMLandRSS({ config })
-    console.timeEnd(chalk.green('=> [\u2713] Routes Exported'))
+  if (!silent) console.time('=> Site is ready for production!')
 
-    console.timeEnd('=> Site is ready for production!')
-    if (config.onBuild) {
-      await config.onBuild({ config })
-    }
-    process.exit(0)
-  } catch (err) {
-    console.log(err)
-    process.exit(1)
+  if (!silent) console.log('=> Copying public directory...')
+  if (!silent) console.time(chalk.green('=> [\u2713] Public directory copied'))
+  copyPublicFolder(config)
+  if (!silent) console.timeEnd(chalk.green('=> [\u2713] Public directory copied'))
+
+  if (!silent) console.log('=> Building Routes...')
+  if (!silent) console.time(chalk.green('=> [\u2713] Routes Built'))
+  await prepareRoutes(config, { dev: false })
+  if (!silent) console.timeEnd(chalk.green('=> [\u2713] Routes Built'))
+
+  // Build static pages and JSON
+  if (!silent) console.log('=> Bundling App...')
+  if (!silent) console.time(chalk.green('=> [\u2713] App Bundled'))
+  const clientStats = await buildProductionBundles({ config })
+  if (!silent) console.timeEnd(chalk.green('=> [\u2713] App Bundled'))
+
+  if (config.bundleAnalyzer) {
+    await new Promise(() => {})
+  }
+
+  await exportRoutes({
+    config,
+    clientStats,
+  })
+  await buildXMLandRSS({ config })
+
+  if (!silent) console.timeEnd('=> Site is ready for production!')
+  if (config.onBuild) {
+    await config.onBuild({ config })
   }
 }

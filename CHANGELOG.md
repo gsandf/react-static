@@ -1,9 +1,140 @@
-# 4.9.0
+# 5.6.0
+#### Features
+- Added `config.extractCssChunks` option. Set to `true` for automatic style-splitting and importing using `ExtractCssChunks` instead of `ExtractTextPlugin`.
+- Added `config.inlineCss` option. Set to `true` to inline all styles into the resulting HTML document instead of using `link` tags.
+#### Fixes & Optimizations
+- Server-side rendering of UTF-8 characters no longer behaves erratically.
+- Resulting HTML for a route no longer includes double instances of route data.
+- Auto hash scrolling is no more responsive and handles more edge cases.
+- Fetching route info for non-existent routes now has better logging.
+- Fixed a bug where an imported `woff2` file extension would crash babel.
+
+# 5.5.14
+#### Fixes & Optimizations
+- Fixed a missing export of `propsByHash`.
+- Added `update-notifier` so people can keep up with all these updates!
+
+# 5.5.13
+#### Fixes & Optimizations
+- Moved `gitdocs` to dev dependencies
+- Added `shrink-to-fit` to default `Document` meta.
+
+# 5.5.12
+#### Fixes & Optimizations
+- Production code-split components that error will now log the correct error to the console.
+- Added `routeInfo` to the `config.Document` component.
+
+
+# 5.5.11
+#### Fixes
+- The `react-hot-loader/babel` is no longer used in production. Who's the dummy who did that?! (...me, haha)
+- `compact: false` is now the default in `.babelrc`. Only a select few care about those compaction messages anyway.
+- Various `__dirname` references are now fixed with the correct number of `../`'s
+
+# 5.5.10
+#### Fixes
+- Fixed a rare issue where hash links may not be scrolled to if navigation is fast enough (imagine that ;)
+- Added a `config.paths.root` option that is also rare.
+
+# 5.5.9
+#### Fixes
+- Fixed a rare issue (in Gitdocs mostly) where a RouteData would not load even though routeInfo.allProps was synchronously
+accessible.
+
+# 5.5.1-8
+#### Fixes
+- `.com` or any other suffix is no longer clipped from `siteRoot`.
+- Absolute URL rewriting now takes into account `basePath` and also `src=''` attributes
+- 404 component more reliably supports `RouteData` and is generally more stable.
+- An `is404` prop is now available via `RouteData/withRouteData` if and when rendered on a 404 page, **regardless if it is the /404 route itself or any other route that results in a 404.**
+- Fixed some hot-reloading side effects that were introduced with the new project architecture.
+- Lost some weight on the node packaging. The docs and many other large files are now excluded from distribution.
+- Improved the node API support with much more stability.
+- Added a `key` prop to the rendered route in `react-static-routes.js` to avoid stale or mixed state for routes that happen to share the same top-level component.
+- Removed complexity from the user by making the `<Routes>` component's `getComponentForPath` render prop more robust. (Check documentation if you use custom rendering for your `react-static-routes`)
+
+# 5.5.0
+#### Features
+- Added a `Redirect` component and `route.redirect` option to routes.
+#### Fixes
+- `src='/'` paths are now also rewritten with siteRoot and basePath
+
+# 5.4.0
+#### Features
+- Added Node API to React-Static via importing `react-static/node`
+- Added the ability to use a custom `static.config.js` via the CLI
+- Added `config.basePath` option for hosting and running react-static sites from a sub-route
+- Added `config.stagingSiteRoot`, `config.stagingBasePath`, `config.devBasePath`. Used for overriding the above options in specific environments
+- Added the ability to create projects using a local template location.
+
+#### Fixes & Optimizations
+- Entire repo has been reorganized and split for easier maintenance and project grokking ability.
+- Template information and route data hashes are now automatically generated and collocated in a `routeInfo.js` for each route, instead of in a single location (give them massive sites some support, baby!)
+- Fixed `config.siteRoot` to be more reliable, but must no longer contain a sub route (it will be stripped)
+- React Router now uses `config.basePath` for its `basename` prop
+- History instances now use `config.basePath` for the `basename` option
+- Moved the codegen for `react-static-routes` to its own file
+- Added `maximum-scale=1` to the default document component's viewport meta
+- More reliable handling of path slashes throughout the codebase
+- Added react `key` props to head scripts, links and preloads
+
+# 5.2.0
+#### Fixes & Optimizations
+- Scrolling to a hash is now more accurate, especially if the page reflows during mid scroll.
+- Added documentation website that is built with `gitdocs`. Still a few kinks to work out.
+- Updated build-with site list
+- All `.gitignore` files are now uniform to not include the `.` until copied during creation
+- Fixed an import typo with the `sass` example
+- Added a basic error logging handler for universally-code-split components
+- Various upkeep items on the Netlify-CMS example
+- CLI now uses `commander`
+- Disabled code-splitting in dev mode. This fixes a majority of problems with react-hot-loader without requiring users to make a ton of changes to their exports.
+
+#### Features
+- CLI now supports using a `.git` address to clone for the template.
+
+# 5.1.14
+#### Fixes
+- Fixed `component` style render props from not passing children
+
+# 5.1.13
+#### Features
+- `Router.scrollToHashOffset` prop allows for setting an offset for hash scrolling now :)
+- Added `netlify-cms` example.
+#### Fixes & Optimizations
+- Squashed some bugs
+
+# 5.1.8
+#### Fixes & Optimizations
+- Removed the various `extract-hoc` related babel plugins in favor of the new `react-hot-loader` version 4.
+
+# 5.1.0
+#### Features
+- Added `--staging` CLI argument to `react-static build` that does not perform build-time optimizations like siteRoot replacement on links assets, etc. If you are testing your site locally, you will likely want to use this option to allow your production site to be navigable on localhost.
+
+# 5.0.0
 #### Features
 - Automatic Route Splitting. From here on out as long a project is using the automatic component-based static routing, all route templates will be automatically deduped and split into separate modules. These modules are statically-rendered into every page that uses them, are preloaded asynchronously with React-Static built-in prefetching utiliies, and are also loaded on demand if needed as the client navigates through your site. Carry on!
 - Automatic prefetching of templates and assets. Any eligible `Link` component to a code/data-split destination will automatically queue a prefetch for the appropriate assets.
+- Render prop versions of `withRouteData` and `withSiteData` are now available as `RouteData` and `SiteData`. These support inline access to their respective props, instead of having to set up an HOC. They also support all three major render prop syntaxes, so render those props however you want!. See the README for more information.
+- Added a new `Loading` render prop component and a companion `withLoading` HOC component to easily display React-Static's loading state (that probably won't happen much, but still... ;).
+- Added a new `Loading`/`withLoading` render prop / HOC component pair. You can render this component to gain access to the `loading` prop, which was previously only accessible via the `Router.subscribe` callback.
 - Path changes now automatically scroll to the top of the page. Duration defaults to `0`ms, but can be modifed via the `scrollToTopDuration` prop on the `Router` component.
-- Hash routing changes now automatically scroll to the element. Duration defaults to `800`ms, but can be modifed via the `scrollToHashDuration` prop on the `Router` component.
+- Hash routing changes now automatically scroll to the element (or top of the page if the hash is removed but the path stays the same). Duration defaults to `800`ms, but can be modifed via the `scrollToHashDuration` prop on the `Router` component.
+#### Breaking Changes
+- In some previous scenarios the window's `location.search` would be taken into account when matching a path. That is now not the case. You could never previously rely on URL parameters for static paths, but now we're letting you know :)
+- The `getRouteProps` and `getSiteData` HOC's have both been renamed to `withRouteData` and `withSiteData`. Using the old methods will result in a deprecation notice and a broken app. Luckily this is an easy find and replace :)
+- `Router.subscribe` has been deprecated. Though, if you still need programmatic access to a loading event, you can use the new `onLoading` subscriber that functions the same way.
+#### How to Upgrade
+- In your components:
+  - Replace all instances of `getRouteProps` with `withRouteData`
+  - Replace all instances of `getSiteProps` with `withSiteData`
+  - Replace all instances of `Router.subscribe` with `onLoading`, and import `onLoading`.
+- In your `static.config.js`:
+  - Replace all instances of `getProps` with `getData`
+  - Replace `getSiteProps` with `getSiteData`
+  - If you are using a custom `Document` be sure to replace the `siteProps` prop with `siteData`.
+- Note: To take advantage of auto-code-splitting, you cannot use custom routing for your static routes. I suggest migrating to the automatic routing strategy asap.
 
 # 4.8.2
 #### Fixes & Optimizations
@@ -33,7 +164,7 @@
 - Handle Routes with spaces (Thanks [@etimberg](https://github/etimberg)!)
 - Add shouldPrefetch() method to avoid setting loading state  (Thanks [@chrisbrown-io](https://github/chrisbrown-io)!)
 - Pass DOM props through in links (Thanks [@denis-sokolov](https://github/denis-sokolov)!)
-- Pass additional CLI arguments through to getSiteProps() (Thanks [@etimberg](https://github/etimberg)!)
+- Pass additional CLI arguments through to getSiteData() (Thanks [@etimberg](https://github/etimberg)!)
 
 # 4.7.0
 #### Features
