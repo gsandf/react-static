@@ -44,6 +44,9 @@ export const getRouteInfo = async path => {
             `routeInfo.json?${process.env.REACT_STATIC_CACHE_BUST}`
           )}`
         )
+        if (typeof data !== 'object') {
+          throw new Error('Invalid JSON')
+        }
         return data
       } catch (err) {
         erroredPaths[path] = true
@@ -81,7 +84,7 @@ export async function prefetchData (path, { priority } = {}) {
 
   // Request the template and loop over the routeInfo.sharedPropsHashes, requesting each prop
   await Promise.all(
-    Object.keys(routeInfo.sharedPropsHashes).map(async key => {
+    Object.keys(routeInfo.sharedPropsHashes || {}).map(async key => {
       const hash = routeInfo.sharedPropsHashes[key]
 
       // Check the propsByHash first
@@ -140,7 +143,9 @@ export async function prefetchTemplate (path, { priority } = {}) {
     } else {
       await prefetchPool.add(() => pathTemplate.preload())
     }
-    routeInfo.templateLoaded = true
+    if (routeInfo) {
+      routeInfo.templateLoaded = true
+    }
     return pathTemplate
   }
 }
